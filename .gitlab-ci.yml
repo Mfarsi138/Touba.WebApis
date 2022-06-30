@@ -1,0 +1,68 @@
+image: microsoft/dotnet:latest
+
+stages:
+  - build
+  - deploy
+
+######################
+###  Variables
+##
+variables:
+  API_PATH: "DAB.WebSite.Api"
+######################
+###  PLM
+##
+plm-build:
+  stage: build
+  tags:
+    - Development 
+  ##rules:
+  ##  - if: '$CI_PIPELINE_SOURCE == "push"'
+  ##      when: on_success 
+  ##  changes:
+##        - $API_PATH/**/* 
+  script:
+    - "cd $API_PATH"
+    - "dotnet restore DAB.WebSite.Api.csproj"
+    - "dotnet msbuild -target:Publish -property:Configuration=Release DAB.WebSite.Api.csproj"
+plm-deploy-development:
+  stage: deploy
+  tags:
+     - Development 
+
+  rules:
+    - if: '($CI_COMMIT_BRANCH == "feature" || $CI_COMMIT_BRANCH == "hotfix")'
+      when: on_success 
+##      changes:
+##        - $API_PATH/**/*   
+  script:
+    - "cd $API_PATH"
+    - "dotnet restore DAB.WebSite.Api.csproj"
+    - "dotnet msbuild -t:Publish -p:Configuration=Release DAB.WebSite.Api.csproj -p:OutputPath=c:\\publish\\website\\"
+    - "del c:\\publish\\website\\publish\\appsettings.json"	
+    - "del c:\\publish\\website\\publish\\web.config"
+    - "C:\\Windows\\System32\\inetsrv\\appcmd stop apppool /apppool.name:'DAB.Website'"
+    - "xcopy 'c:\\publish\\website\\publish' C:\\DAB\\DAB.WebSite /s /e /y"
+    - "C:\\Windows\\System32\\inetsrv\\appcmd start apppool /apppool.name:'DAB.Website'"
+    - "curl.exe -k -X GET https://localhost:1014"
+plm-deploy-production:
+  stage: deploy
+  tags:
+     - ProductionDeploy 
+
+  rules:
+    - if: '($CI_COMMIT_BRANCH == "release")'
+      when: on_success 
+##      changes:
+##        - $API_PATH/**/*   
+  script:
+    - "cd $API_PATH"
+    - "dotnet restore DAB.WebSite.Api.csproj"
+    - "dotnet msbuild -t:Publish -p:Configuration=Release DAB.WebSite.Api.csproj -p:OutputPath=c:\\publish\\website\\"
+    - "del c:\\publish\\website\\publish\\appsettings.json"	
+    - "del c:\\publish\\website\\publish\\web.config"
+    - "C:\\Windows\\System32\\inetsrv\\appcmd stop apppool /apppool.name:'DAB.Website'"
+    - "xcopy 'c:\\publish\\website\\publish' C:\\DAB\\DAB.WebSite /s /e /y"
+    - "C:\\Windows\\System32\\inetsrv\\appcmd start apppool /apppool.name:'DAB.Website'"
+    - "curl.exe -k -X GET https://localhost:1014"
+

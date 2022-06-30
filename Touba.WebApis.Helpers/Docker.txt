@@ -1,0 +1,27 @@
+﻿# Load rabbitMQ image
+docker load < rabbitmq-3.7.26-management.tar
+or
+docker pull rabbitmq:3-management
+
+# List the existing images
+docker images
+or
+docker image ls
+
+# List the running images
+docker container ls
+
+# Run the rabbitMQ image
+docker run --rm -it --hostname my-rabbit -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+
+# Publish the image on a port
+docker container run --detach --publish 80 webinar-app:v1
+
+# Get the information (e.g. the virtual IP address of the image) of the running container
+docker container inspect [three first digits of the container id]
+
+# Switch between windows and linux os daemon
+DockerCli.exe -SwitchDaemon
+
+# Build a docker image
+docker build -f "E:\Workspace\Asp.Net\DataMatix\DAB\DAB.Infrastructure.APIGateway\Dockerfile" --force-rm -t dabinfrastructureapigateway:dev --target base  --label "com.microsoft.created-by=visual-studio" --label "com.microsoft.visual-studio.project-name=DAB.Infrastructure.APIGateway" "E:\Workspace\Asp.Net\DataMatix\DAB"
